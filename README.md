@@ -1,11 +1,5 @@
-# Welcome to the JDK!
+# Welcome to LabsJDK EE 19!
 
-For build instructions please see the
-[online documentation](https://openjdk.java.net/groups/build/doc/building.html),
-or either of these files:
+This is a fork of https://orahub.oci.oraclecorp.com/jpg-sec/jdk19u-cpu-open that
+exists for the purpose of building a base JDK upon which GraalVM EE 19 can be built.
 
-- [doc/building.html](doc/building.html) (html version)
-- [doc/building.md](doc/building.md) (markdown version)
-
-See <https://openjdk.java.net/> for more information about
-the OpenJDK Community and the JDK.
