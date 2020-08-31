@@ -31,7 +31,7 @@ suite = {
                 ],
             },
             "javaCompliance" : "19+",
-            "checkstyleVersion" : "8.8",
+            "checkstyleVersion" : "8.36.1",
             "workingSets" : "API,JVMCI",
         },
 
@@ -70,6 +70,7 @@ suite = {
             "sourceDirs" : ["src"],
             "dependencies" : [
                 "mx:JUNIT",
+                "jdk.vm.ci.aarch64",
                 "jdk.vm.ci.amd64",
                 "jdk.vm.ci.code",
                 "jdk.vm.ci.hotspot",
@@ -93,6 +94,9 @@ suite = {
         "jdk.vm.ci.runtime.test" : {
             "subDir" : "test/hotspot/jtreg/compiler/jvmci",
             "sourceDirs" : ["src"],
+            "requires" : [
+                "java.instrument",
+            ],
             "requiresConcealed" : {
                 "java.base" : [
                     "jdk.internal.reflect",
@@ -154,7 +158,8 @@ suite = {
             "requiresConcealed" : {
                 "java.base" : [
                     "jdk.internal.misc",
-                    "jdk.internal.vm.annotation"
+                    "jdk.internal.vm.annotation",
+                    "jdk.internal.org.objectweb.asm",
                 ],
             },
             "dependencies" : [
