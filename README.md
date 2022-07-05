@@ -1,5 +1,4 @@
-# Welcome to LabsJDK EE 19!
+# Welcome to LabsJDK CE 19!
 
-This is a fork of https://orahub.oci.oraclecorp.com/jpg-sec/jdk19u-cpu-open that
-exists for the purpose of building a base JDK upon which GraalVM EE 19 can be built.
-
+This is a fork of https://github.com/openjdk/jdk19u that
+exists for the purpose of building a base JDK upon which GraalVM CE 19 can be built.
