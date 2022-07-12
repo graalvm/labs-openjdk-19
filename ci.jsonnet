@@ -158,9 +158,12 @@ local labsjdk_builder_version = "1c001b9a3961abc6fbc209ab926bbe9b5e96ef21";
     MuslBootJDK:: {
         downloads+: {
             BOOT_JDK: {
-                name: "oraclejdk",
-                version: "19+9-musl",
-                platformspecific: true,
+                build_id: "9",
+                name: "jpg-jdk",
+                version: "19",
+                release: true,
+                musl: true,
+                platformspecific: true
             }
         },
         environment+: {
