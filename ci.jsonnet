@@ -10,7 +10,7 @@ local labsjdk_builder_version = "1c001b9a3961abc6fbc209ab926bbe9b5e96ef21";
     mxDependencies:: {
         python_version: "3",
         packages+: {
-            mx: "6.1.5",
+            mx: "HEAD",
             python3: "==3.8.10",
             'pip:pylint': '==2.4.4',
       },
