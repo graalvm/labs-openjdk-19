@@ -4,7 +4,7 @@ local run_test_spec = "test/hotspot/jtreg/compiler/jvmci";
 local labsjdk_builder_version = "1c001b9a3961abc6fbc209ab926bbe9b5e96ef21";
 
 {
-    overlay: "59a8ce23e959dfb9d158db144ccb2d065e73f1e3",
+    overlay: "adc52f479f9d2b1f55985066bf95d454702c7a89",
     specVersion: "3",
 
     mxDependencies:: {
@@ -429,7 +429,7 @@ local labsjdk_builder_version = "1c001b9a3961abc6fbc209ab926bbe9b5e96ef21";
             # GR-39559 [ self.TestLibGraal(conf) for conf in graal_confs ] +
 
             [ self.Build(defs, conf, is_musl_build=true) for conf in amd64_musl_confs(defs) ],
-            
+
     local defs = {
         labsjdk_builder_url: "<placeholder",
         linux_docker_image_amd64_musl: "<placeholder",
@@ -437,6 +437,6 @@ local labsjdk_builder_version = "1c001b9a3961abc6fbc209ab926bbe9b5e96ef21";
         jib_server: "<placeholder",
         jib_server_mirrors: "<placeholder"
     },
-    
+
     builds: self.DefineBuilds(defs)
 }
