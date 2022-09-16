@@ -305,8 +305,7 @@ local labsjdk_builder_version = "1c001b9a3961abc6fbc209ab926bbe9b5e96ef21";
         logs: ["*.log"],
         targets: ["gate"],
         run+: [
-            ["mx", "-p", "graal/compiler", "gate", "--tags", "build,test,bootstraplite",
-             /* GR-39558 */ "--extra-unittest-argument=Copy"]
+            ["mx", "-p", "graal/compiler", "gate", "--tags", "build,test,bootstraplite"]
         ]
     },
 
