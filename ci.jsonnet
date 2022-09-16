@@ -382,7 +382,8 @@ local labsjdk_builder_version = "1c001b9a3961abc6fbc209ab926bbe9b5e96ef21";
             ["unpack-artifact", "libgraal" + conf.name],
             ["mx", "-p", "graal/vm",
                 "--env", "libgraal",
-                "gate", "--task", "LibGraal"],
+# GR-39559      "gate", "--task", "LibGraal"],
+                "gate", "--task", "LibGraal Compiler"],
         ],
         environment+: {
             # The Truffle TCK tests run as a part of Truffle TCK gate
@@ -424,8 +425,8 @@ local labsjdk_builder_version = "1c001b9a3961abc6fbc209ab926bbe9b5e96ef21";
 
             # GR-39560 [ self.JavaScriptTests(conf) for conf in graal_confs ] +
 
-            # GR-39559 [ self.BuildLibGraal(conf) for conf in graal_confs ] +
-            # GR-39559 [ self.TestLibGraal(conf) for conf in graal_confs ] +
+            [ self.BuildLibGraal(conf) for conf in graal_confs(defs) ] +
+            [ self.TestLibGraal(conf) for conf in graal_confs(defs) ] +
 
             [ self.Build(defs, conf, is_musl_build=true) for conf in amd64_musl_confs(defs) ],
 
