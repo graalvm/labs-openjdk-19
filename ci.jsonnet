@@ -423,7 +423,7 @@ local labsjdk_builder_version = "1c001b9a3961abc6fbc209ab926bbe9b5e96ef21";
     DefineBuilds(defs):: [ self.Build(defs, conf, is_musl_build=false) for conf in build_confs(defs) ] +
             [ self.CompilerTests(conf) for conf in graal_confs(defs) ] +
 
-            # GR-39560 [ self.JavaScriptTests(conf) for conf in graal_confs ] +
+            [ self.JavaScriptTests(conf) for conf in graal_confs(defs) ] +
 
             [ self.BuildLibGraal(conf) for conf in graal_confs(defs) ] +
             [ self.TestLibGraal(conf) for conf in graal_confs(defs) ] +
