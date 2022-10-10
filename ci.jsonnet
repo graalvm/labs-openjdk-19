@@ -382,8 +382,7 @@ local labsjdk_builder_version = "1c001b9a3961abc6fbc209ab926bbe9b5e96ef21";
             ["unpack-artifact", "libgraal" + conf.name],
             ["mx", "-p", "graal/vm",
                 "--env", "libgraal",
-# GR-39559      "gate", "--task", "LibGraal"],
-                "gate", "--task", "LibGraal Compiler"],
+                "gate", "--task", "LibGraal"],
         ],
         environment+: {
             # The Truffle TCK tests run as a part of Truffle TCK gate
