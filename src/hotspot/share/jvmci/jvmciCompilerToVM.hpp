@@ -48,6 +48,25 @@ class CompilerToVM {
     static address SharedRuntime_deopt_blob_unpack;
     static address SharedRuntime_deopt_blob_unpack_with_exception_in_tls;
     static address SharedRuntime_deopt_blob_uncommon_trap;
+    static address SharedRuntime_polling_page_return_handler;
+
+    static address nmethod_entry_barrier;
+    static int thread_disarmed_offset;
+    static int thread_address_bad_mask_offset;
+#ifdef AARCH64
+    static bool BarrierSetAssembler_nmethod_code_patching;
+#endif
+
+    static address ZBarrierSetRuntime_load_barrier_on_oop_field_preloaded;
+    static address ZBarrierSetRuntime_load_barrier_on_weak_oop_field_preloaded;
+    static address ZBarrierSetRuntime_load_barrier_on_phantom_oop_field_preloaded;
+    static address ZBarrierSetRuntime_weak_load_barrier_on_oop_field_preloaded;
+    static address ZBarrierSetRuntime_weak_load_barrier_on_weak_oop_field_preloaded;
+    static address ZBarrierSetRuntime_weak_load_barrier_on_phantom_oop_field_preloaded;
+    static address ZBarrierSetRuntime_load_barrier_on_oop_array;
+    static address ZBarrierSetRuntime_clone;
+
+    static bool continuations_enabled;
 
     static size_t ThreadLocalAllocBuffer_alignment_reserve;
 

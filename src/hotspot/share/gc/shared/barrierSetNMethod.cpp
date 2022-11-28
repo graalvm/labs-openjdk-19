@@ -36,6 +36,9 @@
 #include "runtime/thread.hpp"
 #include "runtime/threadWXSetters.inline.hpp"
 #include "utilities/debug.hpp"
+#if INCLUDE_JVMCI
+#include "jvmci/jvmciRuntime.hpp"
+#endif
 
 class LoadPhantomOopClosure : public OopClosure {
 public:
@@ -58,11 +61,15 @@ bool BarrierSetNMethod::supports_entry_barrier(nmethod* nm) {
     return false;
   }
 
-  if (!nm->is_native_method() && !nm->is_compiled_by_c2() && !nm->is_compiled_by_c1()) {
-    return false;
+  if (nm->is_native_method() || nm->is_compiled_by_c2() || nm->is_compiled_by_c1()) {
+    return true;
   }
 
-  return true;
+  if (nm->is_compiled_by_jvmci() && nm->jvmci_nmethod_data()->has_entry_barrier()) {
+    return true;
+  }
+
+  return false;
 }
 
 bool BarrierSetNMethod::nmethod_entry_barrier(nmethod* nm) {
