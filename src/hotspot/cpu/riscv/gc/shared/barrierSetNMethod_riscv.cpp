@@ -35,16 +35,50 @@
 #include "runtime/thread.hpp"
 #include "utilities/align.hpp"
 #include "utilities/debug.hpp"
+#if INCLUDE_JVMCI
+#include "jvmci/jvmciRuntime.hpp"
+#endif
 
-class NativeNMethodBarrier: public NativeInstruction {
-  address instruction_address() const { return addr_at(0); }
+class NativeNMethodBarrier {
+  address  _instruction_address;
+  int*     _guard_addr;
+  nmethod* _nm;
+
+  address instruction_address() const { return _instruction_address; }
 
   int *guard_addr() {
-    /* auipc + lwu + fence + lwu + beq + lui + addi + slli + addi + slli + jalr + j */
-    return reinterpret_cast<int*>(instruction_address() + 12 * 4);
+    return _guard_addr;
   }
 
 public:
+  NativeNMethodBarrier(nmethod* nm): _nm(nm) {
+    address barrier_address;
+#if INCLUDE_JVMCI
+    if (nm->is_compiled_by_jvmci()) {
+      _instruction_address = nm->code_begin() + nm->frame_complete_offset();
+      _guard_addr = reinterpret_cast<int*>(nm->consts_begin() + nm->jvmci_nmethod_data()->nmethod_entry_patch_offset());
+    } else
+#endif
+      {
+        /// This is the offset of the entry barrier relative to where the frame is completed.
+        // If any code changes between the end of the verified entry where the entry
+        // barrier resides, and the completion of the frame, then
+        // NativeNMethodCmpBarrier::verify() will immediately complain when it does
+        // not find the expected native instruction at this offset, which needs updating.
+        // Note that this offset is invariant of PreserveFramePointer.
+
+        // see BarrierSetAssembler::nmethod_entry_barrier
+        // auipc + lwu + fence + lwu + beq + movptr_with_offset(5 instructions) + jalr + j + int32
+        static const int entry_barrier_offset = -4 * 13;
+
+        /* auipc + lwu + fence + lwu + beq + lui + addi + slli + addi + slli + jalr + j */
+        static const int guard_offset = 12 * 4;
+
+        _instruction_address = nm->code_begin() + nm->frame_complete_offset() + entry_barrier_offset;
+        _guard_addr = reinterpret_cast<int*>(_instruction_address + guard_offset);
+      }
+  }
+
   int get_value() {
     return Atomic::load_acquire(guard_addr());
   }
@@ -53,7 +87,11 @@ public:
     Atomic::release_store(guard_addr(), value);
   }
 
-  void verify() const;
+  bool check_barrier(FormatBuffer<>& msg) const;
+  void verify() const {
+    FormatBuffer<> msg("%s", "");
+    assert(check_barrier(msg), "%s", msg.buffer());
+  }
 };
 
 // Store the instruction bitmask, bits and name for checking the barrier.
@@ -84,16 +122,17 @@ static const struct CheckInsn barrierInsn[] = {
 // The encodings must match the instructions emitted by
 // BarrierSetAssembler::nmethod_entry_barrier. The matching ignores the specific
 // register numbers and immediate values in the encoding.
-void NativeNMethodBarrier::verify() const {
+bool NativeNMethodBarrier::check_barrier(FormatBuffer<>& msg) const {
   intptr_t addr = (intptr_t) instruction_address();
   for(unsigned int i = 0; i < sizeof(barrierInsn)/sizeof(struct CheckInsn); i++ ) {
     uint32_t inst = *((uint32_t*) addr);
     if ((inst & barrierInsn[i].mask) != barrierInsn[i].bits) {
-      tty->print_cr("Addr: " INTPTR_FORMAT " Code: 0x%x", addr, inst);
-      fatal("not an %s instruction.", barrierInsn[i].name);
+      msg.print("Addr: " INTPTR_FORMAT " Code: 0x%x not an %s instruction", addr, inst, barrierInsn[i].name);
+      return false;
     }
     addr += 4;
   }
+  return true;
 }
 
 
@@ -133,33 +172,15 @@ void BarrierSetNMethod::deoptimize(nmethod* nm, address* return_address_ptr) {
   new_frame->pc = SharedRuntime::get_handle_wrong_method_stub();
 }
 
-// This is the offset of the entry barrier from where the frame is completed.
-// If any code changes between the end of the verified entry where the entry
-// barrier resides, and the completion of the frame, then
-// NativeNMethodCmpBarrier::verify() will immediately complain when it does
-// not find the expected native instruction at this offset, which needs updating.
-// Note that this offset is invariant of PreserveFramePointer.
-
-// see BarrierSetAssembler::nmethod_entry_barrier
-// auipc + lwu + fence + lwu + beq + movptr_with_offset(5 instructions) + jalr + j + int32
-static const int entry_barrier_offset = -4 * 13;
-
-static NativeNMethodBarrier* native_nmethod_barrier(nmethod* nm) {
-  address barrier_address = nm->code_begin() + nm->frame_complete_offset() + entry_barrier_offset;
-  NativeNMethodBarrier* barrier = reinterpret_cast<NativeNMethodBarrier*>(barrier_address);
-  debug_only(barrier->verify());
-  return barrier;
-}
-
 void BarrierSetNMethod::disarm(nmethod* nm) {
   if (!supports_entry_barrier(nm)) {
     return;
   }
 
   // Disarms the nmethod guard emitted by BarrierSetAssembler::nmethod_entry_barrier.
-  NativeNMethodBarrier* barrier = native_nmethod_barrier(nm);
+  NativeNMethodBarrier barrier(nm);
 
-  barrier->set_value(disarmed_value());
+  barrier.set_value(disarmed_value());
 }
 
 void BarrierSetNMethod::arm(nmethod* nm, int arm_value) {
@@ -171,6 +192,13 @@ bool BarrierSetNMethod::is_armed(nmethod* nm) {
     return false;
   }
 
-  NativeNMethodBarrier* barrier = native_nmethod_barrier(nm);
-  return barrier->get_value() != disarmed_value();
+  NativeNMethodBarrier barrier(nm);
+  return barrier.get_value() != disarmed_value();
 }
+
+#if INCLUDE_JVMCI
+bool BarrierSetNMethod::verify_barrier(nmethod* nm, FormatBuffer<>& msg) {
+  NativeNMethodBarrier barrier(nm);
+  return barrier.check_barrier(msg);
+}
+#endif
